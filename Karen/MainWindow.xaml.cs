@@ -6,18 +6,18 @@ using System.Text.RegularExpressions;
 using System;
 using Karen.Interop;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Shell;
 using Windows.ApplicationModel;
 using Windows.Storage.Pickers;
 using Microsoft.Win32;
+using Wpf.Ui.Controls;
+using Wpf.Ui.Appearance;
 
 namespace Karen
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : UiWindow
     {
 
         private IntPtr Handle;
@@ -95,13 +95,13 @@ namespace Karen
                     case StartupTaskState.EnabledByPolicy:
                         return true;
                 }
-            } 
-            else using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
-            {
-                // Old-fashioned way -- WASDK would help here
-                key.SetValue("Karen", "\"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\"");
-                return true;
             }
+            else using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+                {
+                    // Old-fashioned way -- WASDK would help here
+                    key.SetValue("Karen", "\"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\"");
+                    return true;
+                }
 
             return false;
         }
@@ -114,9 +114,9 @@ namespace Karen
                 startupTask.Disable();
             }
             else using (RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
-            {
-                key.DeleteValue("Karen", false);
-            }
+                {
+                    key.DeleteValue("Karen", false);
+                }
         }
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
@@ -131,34 +131,10 @@ namespace Karen
             e.Handled = regex.IsMatch(e.Text);
         }
 
-        private void Window_ContentRendered(object sender, System.EventArgs e)
-        {
-            if (WCAUtils.IsWin11)
-            {
-                // Set a transparent background to let the mica brush come through
-                Background = new SolidColorBrush(Color.FromArgb(0, 255, 255, 255));
-
-                WCAUtils.UpdateStyleAttributes((HwndSource)sender);
-                ModernWpf.ThemeManager.Current.ActualApplicationThemeChanged += (s, ev) => WCAUtils.UpdateStyleAttributes((HwndSource)sender);
-            }
-            else
-            {
-                WindowChrome.SetWindowChrome(this, null);
-            }
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Get PresentationSource
-            PresentationSource presentationSource = PresentationSource.FromVisual((Visual)sender);
-
-            // Subscribe to PresentationSource's ContentRendered event
-            presentationSource.ContentRendered += Window_ContentRendered;
-        }
-
         private void Fast_Repair(object sender, RoutedEventArgs e)
         {
             ((App)Application.Current).Distro.Repair();
         }
+
     }
 }

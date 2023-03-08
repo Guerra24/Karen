@@ -61,7 +61,7 @@ namespace Karen.Interop
             int micaValue = 0x02;
 
             // Set dark mode before applying the material, otherwise you'll get an ugly flash when displaying the window.
-            if (darkThemeEnabled) 
+            if (darkThemeEnabled)
                 DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE, ref trueValue, Marshal.SizeOf(typeof(int)));
             else
                 DwmSetWindowAttribute(source.Handle, DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE, ref falseValue, Marshal.SizeOf(typeof(int)));
@@ -78,21 +78,6 @@ namespace Karen.Interop
 
         }
 
-        public static void UpdateStyleAttributes(HwndSource hwnd)
-        {
-            var darkThemeEnabled = ModernWpf.ThemeManager.Current.ActualApplicationTheme == ModernWpf.ApplicationTheme.Dark;
-
-            if (IsWin11)
-                EnableMica(hwnd, darkThemeEnabled);
-            else
-            {
-                if (darkThemeEnabled)
-                    EnableBlur(hwnd, 0xAA000000);
-                else
-                    EnableBlur(hwnd, 0x99FFFFFF);
-            }
-            
-        }
     }
 
     #region Some more Win32 to ask the DWM for acrylic

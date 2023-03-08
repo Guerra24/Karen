@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:Karen"
     xmlns:tb="http://www.hardcodet.net/taskbar"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
 
@@ -13,35 +13,19 @@
             Also, the ShutdownMode was set to explicit, so we have to close the application programmatically
         -->
 
-        <!--  Light theme by default  -->
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ui:ThemeResources>
-
-                    <!-- Theme-Aware resources -->
-                    <ui:ThemeResources.ThemeDictionaries>
-                        <ResourceDictionary x:Key="Light" ui:ThemeDictionary.Key="Light">
-                            <SolidColorBrush x:Key="SystemControlPageBackgroundAltHighBrush" Color="#F3F3F3"/>
-                        </ResourceDictionary>
-
-                        <ResourceDictionary x:Key="Dark" ui:ThemeDictionary.Key="Dark">
-                            <SolidColorBrush x:Key="SystemControlPageBackgroundAltHighBrush" Color="#202020"/>
-                        </ResourceDictionary>
-                    </ui:ThemeResources.ThemeDictionaries>
-                </ui:ThemeResources>
-                <ui:XamlControlsResources />
+                <ui:ThemesDictionary Theme="Dark" />
+                <ui:ControlsDictionary />
             </ResourceDictionary.MergedDictionaries>
 
             <tb:TaskbarIcon
-                x:Key="NotifyIcon"
-                IconSource="/favicon.ico"
-                PopupActivation="All"
-                ToolTipText="LANraragi for Windows">
+                x:Key="NotifyIcon" IconSource="/favicon.ico" ToolTipText="LANraragi for Windows"
+                TrayLeftMouseDown="TaskbarIcon_PopupOpened" TrayRightMouseDown="TaskbarIcon_PopupOpened">
 
-                <tb:TaskbarIcon.TrayPopup>
-                    <!--  the control will be put into a popup with an explicit DataContext  -->
+                <!--<tb:TaskbarIcon.TrayPopup>
                     <local:KarenPopup />
-                </tb:TaskbarIcon.TrayPopup>
+                </tb:TaskbarIcon.TrayPopup>-->
 
             </tb:TaskbarIcon>
 

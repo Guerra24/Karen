@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,8 +11,10 @@ namespace LANraragi.DistroInstaller
 {
     public static class Program
     {
+        private static readonly bool IsUWP = new DesktopBridge.Helpers().IsRunningAsUwp();
 
-        private static readonly ApplicationDataContainer Settings = new DesktopBridge.Helpers().IsRunningAsUwp() ? ApplicationData.Current.LocalSettings : null;
+        private static readonly ApplicationDataContainer? Settings = IsUWP ? ApplicationData.Current.LocalSettings : null;
+
 
         public static int Main(string[] args)
         {
@@ -46,12 +49,12 @@ namespace LANraragi.DistroInstaller
 
             // If running in MSIX context, check version saved in settings against package version to see if we have to upgrade
             // Otherwise, just refer to the CLI argument
-            bool needsUpgrade = new DesktopBridge.Helpers().IsRunningAsUwp() ? NeedsUpgradeMSIX() : NeedsUpgradeCLI(args);
-            
+            bool needsUpgrade = IsUWP ? NeedsUpgradeMSIX() : NeedsUpgradeCLI(args);
+
             // Unused by the actual MSI setup, but might as well leave the functionality in
             bool needsUninstall = args.Length > 0 && args[0] == "-remove";
 
-            if (!WslApi.WslIsDistributionRegistered(distro) || needsUpgrade)
+            if (!needsUninstall && (!WslApi.WslIsDistributionRegistered(distro) || needsUpgrade))
             {
                 if (needsUpgrade)
                 {
@@ -89,8 +92,8 @@ namespace LANraragi.DistroInstaller
                         return 0;
                 }
             }
-            
-            if (new DesktopBridge.Helpers().IsRunningAsUwp())
+
+            if (IsUWP)
             {
                 Package.Current.GetAppListEntriesAsync().GetAwaiter().GetResult()
                 .First(app => app.AppUserModelId == Package.Current.Id.FamilyName + "!Karen").LaunchAsync().GetAwaiter().GetResult();
@@ -116,7 +119,7 @@ namespace LANraragi.DistroInstaller
             {
                 packageFile = args[1];
             }
-            
+
             if (!File.Exists(packageFile))
             {
                 Console.WriteLine("package.tar not found. Please run this program from the LANraragi folder.");
@@ -128,11 +131,11 @@ namespace LANraragi.DistroInstaller
 
             // If Windows build number > 18362, just use wsl.exe --import which is more reliable
             var buildNumber = Environment.OSVersion.Version.Build;
-            if (buildNumber >= 18362) // 1903
+            if (buildNumber >= 18362 && !IsUWP) // 1903
             {
                 var arguments = $"--import {distro} \"Distro\" \"{packageFile}\"";
                 Console.WriteLine("\nUsing WSL CLI: wsl.exe " + arguments);
-                var wslProc = new Process
+                using var wslProc = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
@@ -149,7 +152,7 @@ namespace LANraragi.DistroInstaller
 
                 wslProc.Start();
                 wslProc.WaitForExit((int)TimeSpan.FromMinutes(5).TotalMilliseconds);
-                
+
                 if (wslProc.HasExited)
                     Console.WriteLine("Exit code of wsl.exe is " + wslProc.ExitCode);
                 else
@@ -161,19 +164,19 @@ namespace LANraragi.DistroInstaller
                 Console.WriteLine("\nUsing WSL API");
                 WslApi.WslRegisterDistribution(distro, "package.tar");
             }
-            
+
             if (Settings != null)
                 Settings.Values["Version"] = GetVersion().ToString();
         }
-        
+
         private static void UnInstall(string distro)
         {
             var buildNumber = Environment.OSVersion.Version.Build;
-            if (buildNumber >= 18362) // 1903
+            if (buildNumber >= 18362 && !IsUWP) // 1903
             {
                 var arguments = $"--unregister {distro}";
                 Console.WriteLine("\nUsing WSL CLI: wsl.exe " + arguments);
-                var wslProc = new Process
+                using var wslProc = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
@@ -187,7 +190,7 @@ namespace LANraragi.DistroInstaller
                 };
                 // Write stdout of process to our own
                 wslProc.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
-                
+
                 wslProc.Start();
                 wslProc.WaitForExit((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
             }
@@ -201,7 +204,7 @@ namespace LANraragi.DistroInstaller
 
         private static Version GetVersion()
         {
-            var version = new DesktopBridge.Helpers().IsRunningAsUwp() ? Package.Current.Id.Version : new PackageVersion();
+            var version = IsUWP ? Package.Current.Id.Version : new PackageVersion();
             return new Version(version.Major, version.Minor, version.Build, version.Revision);
         }
     }

@@ -37,7 +37,7 @@ namespace Karen
                 Properties.Settings.Default[key] = obj;
                 Properties.Settings.Default.Save();
             }
-        } 
+        }
 
         public string ContentFolder
         {
@@ -60,17 +60,29 @@ namespace Karen
         public bool StartServerAutomatically
         {
             get => GetObjectLocal(false);
-            set => StoreObjectLocal(value);
+            set
+            {
+                StoreObjectLocal(value);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("StartServerAutomatically"));
+            }
         }
         public bool StartWithWindows
         {
             get => GetObjectLocal(false);
-            set => StoreObjectLocal(value);
+            set
+            {
+                StoreObjectLocal(value);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("StartWithWindows"));
+            }
         }
         public string NetworkPort
         {
             get => GetObjectLocal("3000");
-            set => StoreObjectLocal(value);
+            set
+            {
+                StoreObjectLocal(value);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("NetworkPort"));
+            }
         }
         public bool FirstLaunch
         {
@@ -80,12 +92,20 @@ namespace Karen
         public bool ForceDebugMode
         {
             get => GetObjectLocal(false);
-            set => StoreObjectLocal(value);
+            set
+            {
+                StoreObjectLocal(value);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ForceDebugMode"));
+            }
         }
         public bool UseWSL2
         {
             get => GetObjectLocal(false);
-            set => StoreObjectLocal(value);
+            set
+            {
+                StoreObjectLocal(value);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("UseWSL2"));
+            }
         }
         public string Version
         {

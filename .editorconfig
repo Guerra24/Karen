@@ -1,0 +1,5 @@
+[*.cs]
+
+#Core editorconfig formatting - indentation
+
+indent_style = spaces
